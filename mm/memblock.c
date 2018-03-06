@@ -616,10 +616,6 @@ static int __init_memblock memblock_add_region(phys_addr_t base,
 		     (unsigned long long)base + size - 1,
 		     flags, (void *)_RET_IP_);
 
-	pr_err(" -fzx- base: %llx, size: %llx(%um)\n",
-			(unsigned long long)base, (unsigned long long)size, (unsigned int)(((unsigned long long)size) / 1024 / 1024));
-	WARN_ON(1);
-
 	return memblock_add_range(&memblock.memory, base, size, nid, flags);
 }
 
