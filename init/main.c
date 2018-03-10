@@ -476,11 +476,13 @@ static void __init mm_init(void)
 	ioremap_huge_init();
 }
 
+extern void kernel_dbg_print(unsigned long); /* Jason adds for debug */
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
 	char *after_dashes;
 
+	//kernel_dbg_print(0x0000b001); /* Jason adds for debug */
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
 	debug_objects_early_init();

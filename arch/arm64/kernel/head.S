@@ -210,12 +210,29 @@ section_table:
 #endif
 
 ENTRY(stext)
+	/* [+B+] For Jason Debug */
+	mov	x19, x0
+	bl	kernel_dbg_print
+	mov	x0, x1
+	bl	kernel_dbg_print
+	mov	x0, x2
+	bl	kernel_dbg_print
+	mov	x0, x3
+	bl	kernel_dbg_print
+	mov	x0, x19
+	/* [-E-] For Jason Debug */
 	bl	preserve_boot_args
 	bl	el2_setup			// Drop to EL1, w20=cpu_boot_mode
 	mov	x23, xzr			// KASLR offset, defaults to 0
 	adrp	x24, __PHYS_OFFSET
 	bl	set_cpu_boot_mode_flag
 	bl	__create_page_tables		// x25=TTBR0, x26=TTBR1
+	/* [+B+] For Jason Debug */
+	mov	x19, x0
+	mov	x0, #0xa001
+	bl	kernel_dbg_print
+	mov	x0, x19
+	/* [-E-] For Jason Debug */
 	/*
 	 * The following calls CPU setup code, see arch/arm64/mm/proc.S for
 	 * details.
@@ -819,3 +836,103 @@ __no_granule_support:
 	wfi
 	b 1b
 ENDPROC(__no_granule_support)
+
+#if 1
+	.align 7
+_wait_for_xmitr:
+nr:
+	mov	x1, #0x5054
+	movk	x1, #0x3f21, lsl #16
+	ldr	w1, [x1]
+	tbz	w1, #5, nr
+	ret
+
+_console_putc:
+	mov	x2, x30 /* lr */
+	bl	_wait_for_xmitr
+	mov	x1, #0x5040
+	movk	x1, #0x3f21, lsl #16
+	str	w0, [x1]
+	mov	w1, w0
+	and	w1, w1, #0xff
+	cmp	w1, #0xa
+	b.ne	xi
+	bl	_wait_for_xmitr
+	mov	x1, #0x5040
+	movk	x1, #0x3f21, lsl #16
+	mov	w0, #0xd
+	str	w0, [x1]
+xi:     mov	x30, x2
+	ret
+
+plat_crash_console_putc:
+	b	_console_putc
+
+kernel_dbg_print_start:
+	.asciz "\n## Kernel Debug Message: "
+
+kernel_dbg_print_end:
+	.asciz " ##\n"
+
+	.align 7
+asm_print_str:
+	mov     x3, x30
+1:
+	ldrb    w0, [x4], #0x1
+	cbz     x0, 2f
+	bl      plat_crash_console_putc
+	b       1b
+2:
+	ret     x3
+
+/* The offset to add to get ascii for numerals '0 - 9' */
+#define ASCII_OFFSET_NUM        0x30
+asm_print_hex:
+	mov     x3, x30
+	mov     x5, #64  /* No of bits to convert to ascii */
+1:
+	sub     x5, x5, #4
+	lsrv    x0, x4, x5
+	and     x0, x0, #0xf
+	cmp     x0, #0xA
+	b.lo    2f
+	/* Add by 0x27 in addition to ASCII_OFFSET_NUM
+	* to get ascii for characters 'a - f'.
+	*/
+	add     x0, x0, #0x27
+2:
+	add     x0, x0, #ASCII_OFFSET_NUM
+	bl      plat_crash_console_putc
+	cbnz    x5, 1b
+	ret     x3
+
+	.globl	kernel_dbg_print
+	.align 7
+kernel_dbg_print:
+	mov	x16, x30
+	mov     x10, x0
+	mov     x11, x1
+	mov     x12, x2
+	mov     x13, x3
+	mov     x14, x4
+	mov     x15, x5
+	adr     x4, kernel_dbg_print_start
+	bl      asm_print_str
+	mov	x4, x10
+	bl	asm_print_hex
+	adr     x4, kernel_dbg_print_end
+	bl      asm_print_str
+	mov     x5, x15
+	mov     x4, x14
+	mov	x3, x13
+	mov     x2, x12
+	mov     x1, x11
+	mov     x0, x10
+
+	mov	x30, x16
+	ret
+#else
+	.align 7
+kernel_dbg_print:
+	ret
+#endif
