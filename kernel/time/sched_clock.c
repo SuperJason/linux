@@ -229,6 +229,7 @@ sched_clock_register(u64 (*read)(void), int bits, unsigned long rate)
 		enable_sched_clock_irqtime();
 
 	pr_debug("Registered %pF as sched_clock source\n", read);
+	WARN_ON(1); /* Jason adds for debug */
 }
 
 void __init sched_clock_postinit(void)

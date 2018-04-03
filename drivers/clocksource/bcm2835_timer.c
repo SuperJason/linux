@@ -87,6 +87,8 @@ static void __init bcm2835_timer_init(struct device_node *node)
 	int irq;
 	struct bcm2835_timer *timer;
 
+	/* Jason adds for debug */
+	pr_err("%s:%d, entry\n", __func__, __LINE__);
 	base = of_iomap(node, 0);
 	if (!base)
 		panic("Can't remap registers");
@@ -126,7 +128,7 @@ static void __init bcm2835_timer_init(struct device_node *node)
 
 	clockevents_config_and_register(&timer->evt, freq, 0xf, 0xffffffff);
 
-	pr_info("bcm2835: system timer (irq = %d)\n", irq);
+	pr_err("bcm2835: system timer (irq = %d)\n", irq);
 }
 CLOCKSOURCE_OF_DECLARE(bcm2835, "brcm,bcm2835-system-timer",
 			bcm2835_timer_init);

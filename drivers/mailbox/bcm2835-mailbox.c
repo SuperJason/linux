@@ -80,7 +80,7 @@ static irqreturn_t bcm2835_mbox_irq(int irq, void *dev_id)
 
 	while (!(readl(mbox->regs + MAIL0_STA) & ARM_MS_EMPTY)) {
 		u32 msg = readl(mbox->regs + MAIL0_RD);
-		dev_dbg(dev, "Reply 0x%08X\n", msg);
+		dev_err(dev, "Reply 0x%08X\n", msg);
 		mbox_chan_received_data(link, &msg);
 	}
 	return IRQ_HANDLED;
@@ -93,7 +93,10 @@ static int bcm2835_send_data(struct mbox_chan *link, void *data)
 
 	spin_lock(&mbox->lock);
 	writel(msg, mbox->regs + MAIL1_WRT);
-	dev_dbg(mbox->controller.dev, "Request 0x%08X\n", msg);
+	dev_err(mbox->controller.dev, "Request 0x%08X\n", msg);
+#if 0
+	WARN_ON(1); /* Jason adds for debug */
+#endif
 	spin_unlock(&mbox->lock);
 	return 0;
 }
