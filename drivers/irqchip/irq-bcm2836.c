@@ -21,6 +21,8 @@
 #include <linux/irqdomain.h>
 #include <asm/exception.h>
 
+#include <early_debug.h> /* Jason Debug */
+
 #define LOCAL_CONTROL			0x000
 #define LOCAL_PRESCALER			0x008
 
@@ -186,6 +188,8 @@ __exception_irq_entry bcm2836_arm_irqchip_handle_irq(struct pt_regs *regs)
 	u32 stat;
 
 	stat = readl_relaxed(intc.base + LOCAL_IRQ_PENDING0 + 4 * cpu);
+	kernel_dbg_print(0x0aa0 | cpu, intc.base + LOCAL_IRQ_PENDING0 + 4 * cpu, stat); /* Jason adds for debug */
+	kernel_dbg_print(0x0ab0 | cpu, __pa(intc.base + LOCAL_IRQ_PENDING0 + 4 * cpu), stat); /* Jason adds for debug */
 	if (stat & BIT(LOCAL_IRQ_MAILBOX0)) {
 #ifdef CONFIG_SMP
 		void __iomem *mailbox0 = (intc.base +

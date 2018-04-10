@@ -88,6 +88,8 @@
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
 
+#include <early_debug.h> /* Jason Debug */
+
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -476,16 +478,16 @@ static void __init mm_init(void)
 	ioremap_huge_init();
 }
 
-extern void kernel_dbg_print(unsigned long); /* Jason adds for debug */
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
 	char *after_dashes;
 
-	//kernel_dbg_print(0x0000b001); /* Jason adds for debug */
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 	set_task_stack_end_magic(&init_task);
 	smp_setup_processor_id();
 	debug_objects_early_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	/*
 	 * Set up the the initial canary ASAP:
@@ -496,6 +498,7 @@ asmlinkage __visible void __init start_kernel(void)
 
 	local_irq_disable();
 	early_boot_irqs_disabled = true;
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 /*
  * Interrupts are still disabled. Do necessary setups, then
@@ -511,6 +514,7 @@ asmlinkage __visible void __init start_kernel(void)
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	build_all_zonelists(NULL, NULL);
 	page_alloc_init();
@@ -526,6 +530,7 @@ asmlinkage __visible void __init start_kernel(void)
 			   NULL, set_init_arg);
 
 	jump_label_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	/*
 	 * These use large bootmem allocations and must precede
@@ -537,6 +542,7 @@ asmlinkage __visible void __init start_kernel(void)
 	sort_main_extable();
 	trap_init();
 	mm_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	/*
 	 * Set up the scheduler prior starting any interrupts (such as the
@@ -554,9 +560,11 @@ asmlinkage __visible void __init start_kernel(void)
 		local_irq_disable();
 	idr_init_cache();
 	rcu_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	/* trace_printk() and trace points may be used after this */
 	trace_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	context_tracking_init();
 	radix_tree_init();
@@ -577,6 +585,7 @@ asmlinkage __visible void __init start_kernel(void)
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 	early_boot_irqs_disabled = false;
 	local_irq_enable();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	kmem_cache_init_late();
 
@@ -591,6 +600,7 @@ asmlinkage __visible void __init start_kernel(void)
 		      panic_param);
 
 	lockdep_info();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	/*
 	 * Need to run this when irqs are enabled, because it wants
@@ -628,6 +638,7 @@ asmlinkage __visible void __init start_kernel(void)
 	/* Should be run before the first non-init thread is created */
 	init_espfix_bsp();
 #endif
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 	thread_info_cache_init();
 	cred_init();
 	fork_init();
@@ -638,6 +649,7 @@ asmlinkage __visible void __init start_kernel(void)
 	dbg_late_init();
 	vfs_caches_init();
 	signals_init();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 	/* rootfs populating might need page-writeback */
 	page_writeback_init();
 	proc_root_init();
@@ -648,6 +660,7 @@ asmlinkage __visible void __init start_kernel(void)
 	delayacct_init();
 
 	check_bugs();
+	kernel_dbg_print(0x0001, 0x0a00, __LINE__); /* Jason adds for debug */
 
 	acpi_subsystem_init();
 	sfi_init_late();
